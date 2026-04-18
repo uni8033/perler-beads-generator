@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Upload, Eraser, ChevronDown, Download, Sparkles, ZoomIn, ZoomOut, Move, Image as ImageIcon, CheckCircle2, Crown, Heart, Wand2, Scissors, Paintbrush, Loader2, Undo } from 'lucide-react';
 import { BEAD_BRANDS_DATA, findClosestColor, getContrastYIQ } from './data/beadConfig';
 import type { BeadBrand, BeadColor } from './data/beadConfig';
+import { removeBackground } from '@imgly/background-removal';
 
 interface PixelData {
   colorId: string;
@@ -73,59 +74,6 @@ const generateImageWithAI = async (userPrompt: string): Promise<HTMLImageElement
     console.error("AI Generation Error details:", error);
     throw error;
   }
-};
-
-const mockRemoveBackground = async (img: HTMLImageElement): Promise<HTMLImageElement> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(img, 0, 0);
-      
-      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imgData.data;
-      
-      // Simple mock logic: flood fill from corners to find background, 
-      // instead of removing all white pixels globally.
-      const width = canvas.width;
-      const height = canvas.height;
-      const visited = new Uint8Array(width * height);
-      const stack = [0, width - 1, (height - 1) * width, height * width - 1]; // Start at 4 corners
-      
-      const threshold = 230; // Consider near-white as background
-      
-      while (stack.length > 0) {
-        const p = stack.pop()!;
-        if (visited[p]) continue;
-        
-        const x = p % width;
-        const y = Math.floor(p / width);
-        const i = p * 4;
-        
-        const r = data[i];
-        const g = data[i+1];
-        const b = data[i+2];
-        const a = data[i+3];
-        
-        if (a === 0 || (r > threshold && g > threshold && b > threshold)) {
-          visited[p] = 1;
-          data[i+3] = 0; // Make transparent
-          
-          if (x > 0 && !visited[p - 1]) stack.push(p - 1);
-          if (x < width - 1 && !visited[p + 1]) stack.push(p + 1);
-          if (y > 0 && !visited[p - width]) stack.push(p - width);
-          if (y < height - 1 && !visited[p + width]) stack.push(p + width);
-        }
-      }
-      
-      ctx.putImageData(imgData, 0, 0);
-      const newImg = new Image();
-      newImg.onload = () => resolve(newImg);
-      newImg.src = canvas.toDataURL();
-    }, 1000);
-  });
 };
 
 function calculateGridDimensions(imgWidth: number, imgHeight: number, maxGridSize: number) {
@@ -429,10 +377,16 @@ function App() {
     setIsRemovingBg(true);
     try {
       setHistoryImages(prev => [...prev, originalImage]);
-      const processed = await mockRemoveBackground(originalImage);
-      setOriginalImage(processed);
+      const imageBlob = await removeBackground(originalImage.src);
+      const url = URL.createObjectURL(imageBlob);
+      const newImg = new Image();
+      newImg.onload = () => {
+        setOriginalImage(newImg);
+      };
+      newImg.src = url;
     } catch (error) {
       console.error('Failed to remove background:', error);
+      alert('抠图失败，请稍后重试或检查图片。');
     } finally {
       setIsRemovingBg(false);
     }
