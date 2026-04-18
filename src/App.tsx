@@ -26,9 +26,10 @@ const GRID_OPTIONS: { label: string; value: GridSize }[] = [
 
 // Helper function to call SiliconFlow Image Generation API
 const generateImageWithAI = async (userPrompt: string): Promise<HTMLImageElement> => {
-  // Use local relative path. 
-  // In development, Vite proxy handles it. In production, Vercel Serverless Function handles it.
-  const API_URL = '/api/generate';
+  // Use local relative path pointing to Netlify Function
+  // In local Vite dev environment, Vite proxy will forward this.
+  // In Netlify production, it naturally works.
+  const API_URL = '/.netlify/functions/generateImage';
 
   // Construct a strong prompt for cute pixel/vector art style suitable for perler beads
   const enhancedPrompt = `(Masterpiece), (Pixel Art Sprite), (Flat 2D Vector), ${userPrompt}, (bold clean outlines), (flat color blocks), (solid white background), simple shapes, minimal shading, limited palette, high contrast, centered composition, adorable aesthetic, kawaii style, [no gradients, no blur, no realistic textures]`;
@@ -38,7 +39,7 @@ const generateImageWithAI = async (userPrompt: string): Promise<HTMLImageElement
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
-        // API Key is now injected by the backend/proxy to protect it from public access
+        // API Key is now injected by the Netlify Function Backend
       },
       body: JSON.stringify({
         model: 'Kwai-Kolors/Kolors', // Using a supported Kolors model
@@ -50,6 +51,7 @@ const generateImageWithAI = async (userPrompt: string): Promise<HTMLImageElement
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('API responded with error:', errorData);
       throw new Error(errorData.message || 'Failed to generate image');
     }
 
@@ -60,12 +62,15 @@ const generateImageWithAI = async (userPrompt: string): Promise<HTMLImageElement
       const img = new Image();
       img.crossOrigin = 'Anonymous'; // Crucial for CORS when using external images in canvas
       img.onload = () => resolve(img);
-      img.onerror = () => reject(new Error('Failed to load generated image'));
+      img.onerror = () => {
+        console.error('Failed to load image from URL:', imageUrl);
+        reject(new Error('Failed to load generated image'));
+      };
       img.src = imageUrl;
     });
 
   } catch (error) {
-    console.error("AI Generation Error:", error);
+    console.error("AI Generation Error details:", error);
     throw error;
   }
 };

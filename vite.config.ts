@@ -8,13 +8,13 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     server: {
       proxy: {
-        '/api/generate': {
+        '/.netlify/functions/generateImage': {
           target: 'https://api.siliconflow.cn/v1/images/generations',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/generate/, ''),
+          rewrite: () => '', // Remove the path entirely since we are hitting the root of the target URL
           configure: (proxy) => {
             proxy.on('proxyReq', (proxyReq) => {
-              // 从 .env 文件读取，如果没有则使用备用默认 key，防止意外报错
+              // Read from .env, or use fallback for local dev if missing
               const apiKey = env.SILICONFLOW_API_KEY || 'sk-zqyofjdakvhsujaftchomlgdcqtspkyyvnydpdheyflrkzfr';
               proxyReq.setHeader('Authorization', `Bearer ${apiKey}`);
             });
