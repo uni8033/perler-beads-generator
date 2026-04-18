@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Upload, Eraser, ChevronDown, Download, Sparkles, ZoomIn, ZoomOut, Move, Image as ImageIcon, CheckCircle2, Crown, Heart, Wand2, Scissors, Info, Paintbrush, Loader2, Undo } from 'lucide-react';
+import { Upload, Eraser, ChevronDown, Download, Sparkles, ZoomIn, ZoomOut, Move, Image as ImageIcon, CheckCircle2, Crown, Heart, Wand2, Scissors, Paintbrush, Loader2, Undo } from 'lucide-react';
 import { BEAD_BRANDS_DATA, findClosestColor, getContrastYIQ } from './data/beadConfig';
 import type { BeadBrand, BeadColor } from './data/beadConfig';
 
@@ -258,7 +258,6 @@ function renderCanvas(
   ctx.stroke();
 
   // 2. Draw Beads
-  const radius = targetCellSize * 0.45; // Leave small gap
   for (let y = 0; y < gridH; y++) {
     for (let x = 0; x < gridW; x++) {
       const pixel = pixels[y][x];
