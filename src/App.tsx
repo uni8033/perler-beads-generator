@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Upload, Eraser, ChevronDown, Download, Sparkles, ZoomIn, ZoomOut, Move, Image as ImageIcon, CheckCircle2, Crown, Heart, Wand2, Scissors, Paintbrush, Loader2, Undo } from 'lucide-react';
+import { Upload, Eraser, ChevronDown, Download, Sparkles, ZoomIn, ZoomOut, Move, Image as ImageIcon, CheckCircle2, Crown, Heart, Wand2, Scissors, Paintbrush, Loader2, Undo, MessageCircle } from 'lucide-react';
 import { BEAD_BRANDS_DATA, findClosestColor, getContrastYIQ } from './data/beadConfig';
 import type { BeadBrand, BeadColor } from './data/beadConfig';
 import { removeBackground } from '@imgly/background-removal';
@@ -930,6 +930,28 @@ function App() {
         </div>
 
       </main>
+
+      {/* Floating QR Code Widget */}
+      <div className="fixed bottom-6 left-6 z-50 group flex flex-col items-start">
+        {/* Collapsed State (Button with Text) */}
+        <div className="bg-white rounded-full shadow-lg border border-pink-100 flex items-center justify-center text-pink-500 cursor-pointer group-hover:opacity-0 group-hover:scale-75 absolute bottom-0 left-0 transition-all duration-300 z-10 px-4 py-2.5 gap-2 font-bold hover:bg-pink-50">
+          <MessageCircle size={20} className="animate-pulse" />
+          <span className="text-sm tracking-wide">加入内测群</span>
+        </div>
+        
+        {/* Expanded State (QR Code Card) */}
+        <div className="bg-white p-3 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-pink-100 flex-col items-center gap-2 transition-all duration-300 opacity-0 scale-90 origin-bottom-left group-hover:opacity-100 group-hover:scale-100 flex pointer-events-none group-hover:pointer-events-auto">
+          <div className="w-32 h-32 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 p-1">
+            {/* The user needs to save their QR code image as qrcode.png in the public folder */}
+            <img src="/qrcode.png" alt="群聊二维码" className="w-full h-full object-contain" />
+          </div>
+          <div className="text-center">
+            <p className="text-xs font-bold text-gray-700">像素拼豆内测群</p>
+            <p className="text-[10px] text-pink-400 mt-0.5 font-semibold">扫码加入交流 ✨</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
