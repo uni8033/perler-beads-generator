@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Upload, Eraser, ChevronDown, Download, Sparkles, ZoomIn, ZoomOut, Move, Image as ImageIcon, CheckCircle2, Crown, Heart, Wand2, Scissors, Paintbrush, Loader2, Undo, MessageCircle } from 'lucide-react';
+import { Upload, Eraser, ChevronDown, Download, Sparkles, ZoomIn, ZoomOut, Move, Image as ImageIcon, CheckCircle2, Crown, Heart, Wand2, Scissors, Paintbrush, Loader2, Undo, MessageCircle, X } from 'lucide-react';
 import { BEAD_BRANDS_DATA, findClosestColor, getContrastYIQ } from './data/beadConfig';
 import type { BeadBrand, BeadColor } from './data/beadConfig';
 import { removeBackground } from '@imgly/background-removal';
@@ -279,6 +279,9 @@ function App() {
   const [isRemovingBg, setIsRemovingBg] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [isAiGenerating, setIsAiGenerating] = useState(false);
+  
+  // QR Code Modal State
+  const [showQrModal, setShowQrModal] = useState(false);
 
   // Highlighting
   const [highlightColorId, setHighlightColorId] = useState<string | null>(null);
@@ -941,16 +944,48 @@ function App() {
         
         {/* Expanded State (QR Code Card) */}
         <div className="bg-white p-3 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-pink-100 flex-col items-center gap-2 transition-all duration-300 opacity-0 scale-90 origin-bottom-left group-hover:opacity-100 group-hover:scale-100 flex pointer-events-none group-hover:pointer-events-auto">
-          <div className="w-32 h-32 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 p-1">
-            {/* The user needs to save their QR code image as qrcode.png in the public folder */}
+          <div 
+            className="w-32 h-32 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 p-1 cursor-pointer hover:scale-105 transition-transform"
+            onClick={() => setShowQrModal(true)}
+            title="点击放大二维码"
+          >
             <img src="/qrcode.png" alt="群聊二维码" className="w-full h-full object-contain" />
           </div>
           <div className="text-center">
             <p className="text-xs font-bold text-gray-700">像素拼豆内测群</p>
-            <p className="text-[10px] text-pink-400 mt-0.5 font-semibold">扫码加入交流 ✨</p>
+            <p className="text-[10px] text-pink-400 mt-0.5 font-semibold">点击放大扫码加入 ✨</p>
           </div>
         </div>
       </div>
+
+      {/* Fullscreen QR Code Modal */}
+      {showQrModal && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setShowQrModal(false)}
+        >
+          <div 
+            className="bg-white p-6 rounded-[2rem] shadow-2xl max-w-sm w-full flex flex-col items-center gap-4 relative animate-in zoom-in-95 duration-200"
+            onClick={e => e.stopPropagation()} // Prevent closing when clicking inside the card
+          >
+            <button 
+              onClick={() => setShowQrModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 bg-gray-100 hover:bg-pink-100 text-gray-500 hover:text-pink-500 rounded-full flex items-center justify-center transition-colors"
+            >
+              <X size={18} />
+            </button>
+            
+            <h3 className="text-xl font-extrabold text-gray-800 mt-2">像素拼豆魔法内测群</h3>
+            <p className="text-sm font-bold text-pink-500 bg-pink-50 px-4 py-1.5 rounded-full border border-pink-100">
+              扫一扫上面的二维码图案，加群聊天
+            </p>
+            
+            <div className="w-full aspect-square bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 p-2 mt-2">
+              <img src="/qrcode.png" alt="群聊二维码放大版" className="w-full h-full object-contain" />
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
