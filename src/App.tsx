@@ -286,10 +286,10 @@ function App() {
 
   // Close popover when clicking outside
   useEffect(() => {
-    const handleGlobalClick = (e: MouseEvent) => {
+    const handleGlobalClick = (e: Event) => {
       // Find the closest parent with our specific class
       const target = e.target as HTMLElement;
-      if (!target.closest('.qr-widget-container')) {
+      if (target && !target.closest('.qr-widget-container')) {
         setShowQrPopover(false);
       }
     };
