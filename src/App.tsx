@@ -282,6 +282,29 @@ function App() {
   
   // QR Code Modal State
   const [showQrModal, setShowQrModal] = useState(false);
+  const [showQrPopover, setShowQrPopover] = useState(false);
+
+  // Close popover when clicking outside
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      // Find the closest parent with our specific class
+      const target = e.target as HTMLElement;
+      if (!target.closest('.qr-widget-container')) {
+        setShowQrPopover(false);
+      }
+    };
+    
+    if (showQrPopover) {
+      document.addEventListener('click', handleGlobalClick);
+      // Touch event for better mobile support
+      document.addEventListener('touchstart', handleGlobalClick);
+    }
+    
+    return () => {
+      document.removeEventListener('click', handleGlobalClick);
+      document.removeEventListener('touchstart', handleGlobalClick);
+    };
+  }, [showQrPopover]);
 
   // Highlighting
   const [highlightColorId, setHighlightColorId] = useState<string | null>(null);
@@ -935,18 +958,35 @@ function App() {
       </main>
 
       {/* Floating QR Code Widget */}
-      <div className="fixed bottom-6 left-6 z-50 group flex flex-col items-start">
+      <div 
+        className="qr-widget-container fixed bottom-6 left-6 z-50 flex flex-col items-start"
+        onMouseEnter={() => setShowQrPopover(true)}
+        onMouseLeave={() => setShowQrPopover(false)}
+      >
         {/* Collapsed State (Button with Text) */}
-        <div className="bg-white rounded-full shadow-lg border border-pink-100 flex items-center justify-center text-pink-500 cursor-pointer group-hover:opacity-0 group-hover:scale-75 absolute bottom-0 left-0 transition-all duration-300 z-10 px-4 py-2.5 gap-2 font-bold hover:bg-pink-50">
+        <div 
+          className={`bg-white rounded-full shadow-lg border border-pink-100 flex items-center justify-center text-pink-500 cursor-pointer absolute bottom-0 left-0 transition-all duration-300 z-10 px-4 py-2.5 gap-2 font-bold hover:bg-pink-50 ${showQrPopover ? 'opacity-0 scale-75 pointer-events-none' : 'opacity-100 scale-100'}`}
+          onClick={(e) => {
+            // Stop propagation to prevent immediate global click trigger
+            e.stopPropagation();
+            setShowQrPopover(true);
+          }}
+        >
           <MessageCircle size={20} className="animate-pulse" />
           <span className="text-sm tracking-wide">加入内测群</span>
         </div>
         
         {/* Expanded State (QR Code Card) */}
-        <div className="bg-white p-3 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-pink-100 flex-col items-center gap-2 transition-all duration-300 opacity-0 scale-90 origin-bottom-left group-hover:opacity-100 group-hover:scale-100 flex pointer-events-none group-hover:pointer-events-auto">
+        <div 
+          className={`bg-white p-3 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-pink-100 flex-col items-center gap-2 transition-all duration-300 origin-bottom-left flex ${showQrPopover ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-90 pointer-events-none'}`}
+        >
           <div 
             className="w-32 h-32 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 p-1 cursor-pointer hover:scale-105 transition-transform"
-            onClick={() => setShowQrModal(true)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowQrModal(true);
+              setShowQrPopover(false);
+            }}
             title="点击放大二维码"
           >
             <img src="/qrcode.png" alt="群聊二维码" className="w-full h-full object-contain" />
